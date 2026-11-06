@@ -3,7 +3,7 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 ARG ONEC_VERSION=8.5.1.1529
 
-# 1. Установка графического окружения (Xvfb + XFCE + x11vnc), шрифтов и русской локали
+# 1. Установка графического окружения (Xvfb + XFCE + x11vnc), шрифтов, imagemagick и русской локали
 RUN apt-get update && apt-get install -y --no-install-recommends \
     locales \
     tzdata \
@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     xauth \
     xfce4 \
     dbus-x11 \
+    imagemagick \
     libwebkit2gtk-4.0-37 \
     libgtk-3-0 \
     libx11-6 \
@@ -41,8 +42,8 @@ ENV LANG=ru_RU.UTF-8 \
     TZ=Europe/Moscow \
     DISPLAY=:99
 
-# 2. Установка OneScript 1.9.0 и LTS-версии vanessa-runner@2.6.1
-RUN wget -q https://github.com/EvilBeaver/OneScript/releases/download/v1.9.4/onescript-engine_1.9.4_all.deb \
+# 2. Установка OneScript 1.9.4 и LTS-версии vanessa-runner@2.6.1
+RUN wget -q https://www.google.com/search?q=https://github.com/EvilBeaver/OneScript/releases/download/v1.9.4/onescript-engine\_1.9.4\_all.deb \
     && apt-get update \
     && apt-get install -y ./onescript-engine_1.9.4_all.deb \
     && rm onescript-engine_1.9.4_all.deb \
@@ -57,10 +58,15 @@ RUN chmod +x /tmp/setup.run \
     && /tmp/setup.run --mode unattended --enable-components server,client_full,client_thin,ru \
     && rm -f /tmp/setup.run
 
+# 4. Глобальное отключение поиска аппаратных ключей HASP (UseHwLicenses=0 в UTF-16LE для 1cestart.cfg)
+RUN mkdir -p /root/.1C/1cestart /opt/1cv8/conf /var/1C/licenses \
+    && printf "UseHwLicenses=0\r\nAppAutoInstallLastVersion=0\r\n" | iconv -f UTF-8 -t UTF-16LE > /root/.1C/1cestart/1cestart.cfg \
+    && printf "UseHwLicenses=0\n" >> /opt/1cv8/conf/conf.cfg
+
 # Путь к исполняемым файлам 1С 8.5
 ENV PATH="/opt/1cv8/x86_64/${ONEC_VERSION}:${PATH}"
 
-# 4. Копируем обработку vanessa-automation-single.epf
+# 5. Копируем обработку vanessa-automation.epf
 RUN mkdir -p /opt/vanessa
 COPY dist/vanessa-automation/ /opt/vanessa/
 
@@ -75,11 +81,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     iputils-ping \
     && rm -rf /var/lib/apt/lists/*
 
-# 5. Скрипт запуска виртуального монитора + VNC (поддержка динамических дисплеев)
+# 6. Скрипт запуска виртуального монитора + VNC (поддержка динамических дисплеев)
 RUN printf '#!/bin/bash\n\
 DISPLAY_NUM=${DISPLAY:-:99}\n\
 LOCK_FILE="/tmp/.X${DISPLAY_NUM#:}-lock"\n\
 rm -f $LOCK_FILE\n\
+mkdir -p /root/.1C/1cestart\n\
+printf "UseHwLicenses=0\\r\\nAppAutoInstallLastVersion=0\\r\\n" | iconv -f UTF-8 -t UTF-16LE > /root/.1C/1cestart/1cestart.cfg\n\
 Xvfb $DISPLAY_NUM -screen 0 1920x1080x24 -ac &\n\
 sleep 2\n\
 startxfce4 &\n\
