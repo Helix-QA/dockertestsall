@@ -1,0 +1,14 @@
+{
+  "$schema": "https://raw.githubusercontent.com/vanessa-opensource/vanessa-runner/develop/behavior.schema.json",
+  "default": {
+    "--ibconnection": "/SDESKTOP-BIF25NH/FitnessRel",
+    "--db-user": "Администратор",
+    "--db-pwd": "258456",
+    "--v8version": "8.5.1.1529",
+    "--additional": "/UseHwLicenses- /DisableStartupMessages /DisableStartupDialogs"
+  },
+  "vanessa": {
+    "--vanessasettings": "/workspace/config/va-params.json",
+    "--pathvanessa": "/opt/vanessa/vanessa-automation.epf"
+  }
+}
