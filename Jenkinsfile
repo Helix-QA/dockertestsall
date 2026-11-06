@@ -1,6 +1,7 @@
 pipeline {
 agent any
 
+```
 options {
     disableConcurrentBuilds()
     buildDiscarder(logRotator(numToKeepStr: '20', artifactNumToKeepStr: '10'))
@@ -193,4 +194,7 @@ post {
         ])
     }
 }
+
+```
+
 }

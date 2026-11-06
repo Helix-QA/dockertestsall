@@ -2,6 +2,8 @@ FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ARG ONEC_VERSION=8.5.1.1529
+ARG GH_HOST=github.com
+ARG OSCRIPT_VER=1.9.4
 
 # 1. Установка графического окружения (Xvfb + XFCE + x11vnc), шрифтов, imagemagick и русской локали
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -43,10 +45,10 @@ ENV LANG=ru_RU.UTF-8 \
     DISPLAY=:99
 
 # 2. Установка OneScript 1.9.4 и LTS-версии vanessa-runner@2.6.1
-RUN wget -q https://www.google.com/search?q=https://github.com/EvilBeaver/OneScript/releases/download/v1.9.4/onescript-engine\_1.9.4\_all.deb \
+RUN wget -q -O /tmp/onescript-engine.deb "https://${GH_HOST}/EvilBeaver/OneScript/releases/download/v${OSCRIPT_VER}/onescript-engine_${OSCRIPT_VER}_all.deb" \
     && apt-get update \
-    && apt-get install -y ./onescript-engine_1.9.4_all.deb \
-    && rm onescript-engine_1.9.4_all.deb \
+    && apt-get install -y /tmp/onescript-engine.deb \
+    && rm -f /tmp/onescript-engine.deb \
     && opm update opm \
     && opm install vanessa-runner@2.6.1 \
     && opm install add \
